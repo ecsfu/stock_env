@@ -14,6 +14,42 @@ matplotlib.use("Agg") #控制绘图不显示，必须在import matplotlib.pyplot
 
 class StockTradingEnv(gym.Env):
     """A stock trading environment for OpenAI gym"""
+    """Methods
+    -------
+    _sell_stock()
+        perform sell action based on the sign of the action
+    _buy_stock()
+        perform buy action based on the sign of the action
+    _make_plot()
+        plot assets
+    step()
+        at each step the agent will return actions, then 
+        we will calculate the reward, and return the next observation.
+    reset()
+        reset the environment
+    render()
+        return state
+    _initiate_state()
+        initial state after rest
+    save_asset_memory()
+        return account value at each time step
+    save_action_memory()
+        return actions/positions at each time step  
+    _update_state()
+        after action, state s->s+1
+    _get_date()
+        get date information
+    save_state_memory()
+        save state
+    save_asset_memory()
+        list,save total asset each step
+    save_action_memory()
+        save action
+    _seed()
+        set seed
+    get_sb_env()
+        get stable-baselines3 env   
+    """
 
     metadata = {"render.modes": ["human"]}
 
@@ -35,11 +71,11 @@ class StockTradingEnv(gym.Env):
         make_plots=False,   #画图
         print_verbosity=10,  #测试结果的信息复杂度?
         day=0,   #起始日
-        initial=True,
+        initial=True,  #环境rest()时，是否初始化，初始化则每轮资产值重新更新，否则累计上一轮的资产
         previous_state=[], #前一状态
-        model_name="",
-        mode="",
-        iteration="",
+        model_name="",  #模型名称，训练完保存时用
+        mode="", #模型名称，训练完保存时用
+        iteration="",  #迭代，训练完保存时用
     ):
         self.day = day
         self.df = df
