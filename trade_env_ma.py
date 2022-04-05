@@ -13,42 +13,18 @@ matplotlib.use("Agg") #控制绘图不显示，必须在import matplotlib.pyplot
 
 
 class StockTradingEnv(gym.Env):
-    """A stock trading environment for OpenAI gym"""
-    """Methods
+    """"""
+    """
     -------
-    _sell_stock()
-        perform sell action based on the sign of the action
-    _buy_stock()
-        perform buy action based on the sign of the action
-    _make_plot()
-        plot assets
+   
     step()
-        at each step the agent will return actions, then 
-        we will calculate the reward, and return the next observation.
-    reset()
-        reset the environment
-    render()
-        return state
-    _initiate_state()
-        initial state after rest
-    save_asset_memory()
-        return account value at each time step
-    save_action_memory()
-        return actions/positions at each time step  
-    _update_state()
-        after action, state s->s+1
-    _get_date()
-        get date information
-    save_state_memory()
-        save state
-    save_asset_memory()
-        list,save total asset each step
-    save_action_memory()
-        save action
-    _seed()
-        set seed
-    get_sb_env()
-        get stable-baselines3 env   
+    返回当前交易得到的价格及订单列表
+    _update() 
+    #比较pre买卖列表 与当前买卖列表的差异，对于有变化的订单根据用户id将成交信息反回给用户
+       
+
+    _list_clear() 
+    #删除买卖列表中股份为0的订单
     """
 
     metadata = {"render.modes": ["human"]}
