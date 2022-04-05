@@ -13,5 +13,5 @@ stock environment for reinforcement learning
 1.流通股本：tradable_shares 【标量】<br> 
 2.实时价格：now_price 【标量】<br> 
 3.前一日价格:pre_close 【标量】<br> 
-4.日订单列表买五档行情:list_of_buy  【1维向量：5x1】<br> 
-5.日订单列表卖五档行情:list_of_sell  【1维向量：5x1】<br> 
+4.日订单列表买:list_of_buy  【向量】<br> 
+5.日订单列表卖:list_of_sell  【维向量】<br> 
