@@ -31,9 +31,9 @@ class StockTradingEnv(gym.Env):
 
     def __init__(   #定义一只股票的交易环境
         self,
-        tradable_shares,   #股票数据
-        initial_price, #多少只股票
-        price_limiting,
+        tradable_shares,   #流通股本
+        initial_price, #初始交易价格
+        price_limiting,#涨跌限制
 
         # initial_amount,
         buy_cost_pct,   #买入费率
@@ -79,7 +79,7 @@ class StockTradingEnv(gym.Env):
     def step(self, actions):
         self.terminal = False #终止条件
         now_time = time.time()
-        inner_actions = actions.append(now_time) #增加时间戳
+        inner_actions = actions.append(now_time) #增加时间戳[shares,b_or_s ,user,time]
         if self.terminal:
             # print(f"Episode: {self.episode}")
             pass
@@ -92,8 +92,6 @@ class StockTradingEnv(gym.Env):
             elif inner_actions[0]>0:#买入
                 self.list_of_buy.append(inner_actions)
                 self.list_of_buy = self.list_of_buy[self.list_of_sell[:, 1].argsort()[::-1]]  # 按价格进行排序从大到小
-
-
             """连续竞价交易制度：
             1. 最高买进申报与最低卖出申报相同，则该价格即为成交价格；
             2. 买入申报价格高于即时揭示的最低卖出申报价格时，以即时揭示的最低卖出申报价格为成交价；
@@ -103,6 +101,8 @@ class StockTradingEnv(gym.Env):
                      buy                                                    
             
             """
+            if self.list_of_sell  or self.list_of_buy: #任一列表为空，返回
+                return
             i = 0
             if self.list_of_sell[0][3]>self.list_of_buy[0][3]: #卖单后入
                 if self.list_of_sell[0][1]<self.list_of_buy[0][1]: #卖价低于买价，可交易
