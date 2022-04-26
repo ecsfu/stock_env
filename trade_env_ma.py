@@ -85,7 +85,7 @@ class StockTradingEnv(gym.Env):
             pass
         else:
             if inner_actions[1]>self.pre_close*(1+self.price_limiting) or inner_actions[1]<self.pre_close*(1-self.price_limiting):
-                return self.state  #超过涨跌幅限制，买卖无效，返回原状态
+                return
             elif inner_actions[0]<0: #卖出
                 self.list_of_sell.append(inner_actions)
                 self.list_of_sell = self.list_of_sell[self.list_of_sell[:,1].argsort()] #按价格进行排序从小到大
@@ -102,6 +102,7 @@ class StockTradingEnv(gym.Env):
             
             """
             if self.list_of_sell  or self.list_of_buy: #任一列表为空，返回
+                print('无买单或卖单...')
                 return
             i = 0
             if self.list_of_sell[0][3]>self.list_of_buy[0][3]: #卖单后入
@@ -112,13 +113,15 @@ class StockTradingEnv(gym.Env):
                                 self.list_of_buy[i][0]+=self.list_of_sell[0][0] #更新买单
                                 self.list_of_sell[0][0]=0#清卖单
                                 self.now_price = self.list_of_buy[i][1]  # 更新成交价格
+                                print('卖单成交，成交价格{}'.format(self.now_price))
                             else:
                                 self.list_of_sell[0][0]+=self.list_of_buy[i][0]#更新卖单
                                 self.list_of_buy[i][0]=0 #清买单
+                                self.now_price = self.list_of_buy[i][1]
+                                print('卖单部分成交，成交价为{}'.format(self.now_price))
 
                         i+=1
-                    if self.list_of_sell[0][0]!=0:
-                        self.now_price = self.list_of_buy[i-1][1]  # 更新成交价格
+
 
             if self.list_of_sell[0][3]<self.list_of_buy[0][3]: #买单后入
                 if self.list_of_sell[0][1]<self.list_of_buy[0][1]: #买价高于卖价，可交易
@@ -128,22 +131,19 @@ class StockTradingEnv(gym.Env):
                                 self.list_of_sell[i][0]+=self.list_of_buy[0][0] #卖单更新
                                 self.list_of_buy[0][0]=0 #清买单
                                 self.now_price = self.list_of_sell[i][1]  # 更新成交价格
+                                print('买单成交，成交价格{}'.format(self.now_price))
                             else:
                                 self.list_of_buy[0][0] += self.list_of_sell[i][0]  # 更新买单量
-                                self.list_of_sell[0][0]=0 #清卖单
+                                self.list_of_sell[i][0]=0 #清卖单
+                                self.now_price = self.list_of_sell[i][1]
+                                print('买单部分成交，成交价为{}'.format(self.now_price))
 
                         i+=1
-                    if self.list_of_buy[0][0]!=0:  #买单仍未完全成交
-                        self.now_price = self.list_of_sell[i-1][1]  # 更新成交价格
-
-            self._update() #通知各个agent订单执行变化情况
-            self.list_of_sell, self.list_of_buy = self._list_clear() #删除买卖列表中股份为0的订单
-            self.pre_list_of_sell, self.pre_list_of_buy = self.list_of_sell, self.list_of_buy
-
 
         return self.now_price, self.list_of_sell, self.list_of_buy #返回当前价格，挂单信息
-    def _update(self): #比较pre买卖列表 与当前买卖列表的差异，对于有变化的订单根据用户id将成交信息反回给用户
-        pass
+    def _update_list(self,list_of_sell,list_of_buy): # 更新买单卖单
+        self.list_of_sell, self.list_of_buy = list_of_sell,list_of_buy #
+
 
     def _list_clear(self): #删除买卖列表中股份为0的订单
         pass
@@ -160,12 +160,8 @@ class StockTradingEnv(gym.Env):
 
     def _initiate_state(self):
 
-        return state
+        pass
 
-    def _update_state(self):
-
-
-        return state
 
 
     def _seed(self, seed=None):
