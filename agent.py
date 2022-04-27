@@ -24,6 +24,7 @@ class agent:
         share = random.randint(1, 10)  # 卖1-10手
         price = now_price - 0.01
         action_sell = [-share,price,self.id]
+        return action_sell
 
 
 

@@ -145,8 +145,8 @@ class StockTradingEnv(gym.Env):
         self.list_of_sell, self.list_of_buy = list_of_sell,list_of_buy #
 
 
-    def _list_clear(self): #删除买卖列表中股份为0的订单
-        pass
+    def market_price(self): #返回市价
+        return self.now_price
 
     def reset(self):
         # initiate state
