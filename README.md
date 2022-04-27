@@ -17,7 +17,7 @@ stock environment for reinforcement learning
 
 --------------------------------------------------------
 
-初始价格10元，通过agent模拟市场交易
+初始价格10元，流通股本1亿，通过agent模拟市场交易
 
 ![100agent-10ep—balance](https://user-images.githubusercontent.com/63079631/165524424-a74315cd-46cd-4e1c-9f18-99a9ce825ef8.png)
 ![100agent-10ep—buy](https://user-images.githubusercontent.com/63079631/165524504-f97746ef-a109-4b5a-994c-56352276f4f7.png)
