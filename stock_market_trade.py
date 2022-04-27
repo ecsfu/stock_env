@@ -1,5 +1,5 @@
 from agent import agent
-from trade_env_ma import StockTradingEnv
+from trade_env import StockTradingEnv
 import numpy as np
 from datetime import datetime
 import matplotlib.pyplot as plt
