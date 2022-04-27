@@ -77,21 +77,33 @@ class StockTradingEnv(gym.Env):
 
 
     def step(self, actions):
-        self.terminal = False #终止条件
+        self.terminal = False #终止条件,暂未考虑
+        time.sleep(0.0001)
         now_time = time.time()
-        inner_actions = actions.append(now_time) #增加时间戳[shares,b_or_s ,user,time]
+        print('now_time',now_time)
+        actions.append(now_time) #增加时间戳[shares,b_or_s ,user,time]
+
         if self.terminal:
             # print(f"Episode: {self.episode}")
             pass
         else:
-            if inner_actions[1]>self.pre_close*(1+self.price_limiting) or inner_actions[1]<self.pre_close*(1-self.price_limiting):
-                return
-            elif inner_actions[0]<0: #卖出
-                self.list_of_sell.append(inner_actions)
+            if actions[1]>self.pre_close*(1+self.price_limiting) or actions[1]<self.pre_close*(1-self.price_limiting):
+                print('超出涨跌限制，挂单作废.....')
+                return None,None,None # 超出涨跌限制
+            elif actions[0]<0: #卖出
+                if isinstance(self.list_of_sell,np.ndarray):
+
+                    self.list_of_sell = self.list_of_sell.tolist()
+
+                self.list_of_sell.append(actions)
+                self.list_of_sell = np.array(self.list_of_sell)
                 self.list_of_sell = self.list_of_sell[self.list_of_sell[:,1].argsort()] #按价格进行排序从小到大
-            elif inner_actions[0]>0:#买入
-                self.list_of_buy.append(inner_actions)
-                self.list_of_buy = self.list_of_buy[self.list_of_sell[:, 1].argsort()[::-1]]  # 按价格进行排序从大到小
+            elif actions[0]>0:#买入
+                if isinstance(self.list_of_buy,np.ndarray):
+                    self.list_of_buy = self.list_of_buy.tolist() #转列表
+                self.list_of_buy.append(actions)
+                self.list_of_buy = np.array(self.list_of_buy) #转numpy
+                self.list_of_buy = self.list_of_buy[self.list_of_buy[:, 1].argsort()[::-1]]  # 按价格进行排序从大到小
             """连续竞价交易制度：
             1. 最高买进申报与最低卖出申报相同，则该价格即为成交价格；
             2. 买入申报价格高于即时揭示的最低卖出申报价格时，以即时揭示的最低卖出申报价格为成交价；
@@ -101,42 +113,56 @@ class StockTradingEnv(gym.Env):
                      buy                                                    
             
             """
-            if self.list_of_sell  or self.list_of_buy: #任一列表为空，返回
-                print('无买单或卖单...')
-                return
+            if len(self.list_of_sell)==0  or len(self.list_of_buy)==0: #任一列表为空，返回
+                print('无买单或卖单，挂单中...')
+                return None,None,None #无法成交
             i = 0
-            if self.list_of_sell[0][3]>self.list_of_buy[0][3]: #卖单后入
+            print(self.list_of_sell[0][4],self.list_of_buy[0][4])
+            print(self.list_of_sell[0][4]== self.list_of_buy[0][4])
+            if self.list_of_sell[0][4]>self.list_of_buy[0][4]: #卖单后入
+                print('新入卖单，开始匹配买单...')
                 if self.list_of_sell[0][1]<self.list_of_buy[0][1]: #卖价低于买价，可交易
-                    while i<len(self.list_of_buy) or -self.list_of_sell[0][0] >0:
+                    print('新入卖单价格低于买单价格，可以成交...')
+                    while i<len(self.list_of_buy) and -self.list_of_sell[0][0] >0:
+                        print('匹配第{}个买单'.format(i+1))
                         if self.list_of_sell[0][1] < self.list_of_buy[i][1]: #可交易
+                            print('卖单价格低于第{}个买单，可以成交'.format(i+1))
                             if -self.list_of_sell[0][0] <= self.list_of_buy[i][0]: #卖单小于买单
+                                print('卖单小于买单')
                                 self.list_of_buy[i][0]+=self.list_of_sell[0][0] #更新买单
                                 self.list_of_sell[0][0]=0#清卖单
                                 self.now_price = self.list_of_buy[i][1]  # 更新成交价格
-                                print('卖单成交，成交价格{}'.format(self.now_price))
-                            else:
+                                print('agent{}直接卖单成交，成交价格{}'.format(self.list_of_sell[0][2],self.now_price))
+                            else:#卖单大于于买单
+                                print('卖单大于买单')
                                 self.list_of_sell[0][0]+=self.list_of_buy[i][0]#更新卖单
                                 self.list_of_buy[i][0]=0 #清买单
-                                self.now_price = self.list_of_buy[i][1]
-                                print('卖单部分成交，成交价为{}'.format(self.now_price))
+                                self.now_price = self.list_of_buy[i][1]  # 更新成交价格
+                                print('agent{}买单全部分成交，成交价为{}'.format(self.list_of_buy[i][2], self.now_price))
+                                print('agent{}卖单部分成交，成交价为{}'.format(self.list_of_sell[0][2],self.now_price))
 
                         i+=1
 
-
-            if self.list_of_sell[0][3]<self.list_of_buy[0][3]: #买单后入
+            i=0
+            if self.list_of_sell[0][4]<self.list_of_buy[0][4]: #买单后入
+                print('新入买单，开始匹配卖单...')
                 if self.list_of_sell[0][1]<self.list_of_buy[0][1]: #买价高于卖价，可交易
-                    while i<len(self.list_of_sell) or self.list_of_buy[0][0] >0:
+                    print('新入买单价格高于卖单价格，可以成交...')
+                    while i<len(self.list_of_sell) and self.list_of_buy[0][0] >0: #买单没有全部成交或卖单没有全部遍历
+                        print('匹配第{}个卖单'.format(i + 1))
                         if self.list_of_sell[i][1] < self.list_of_buy[0][1]: #可交易
+                            print('买单价格高于第{}个卖单，可以成交'.format(i + 1))
                             if self.list_of_buy[0][0] <= -self.list_of_sell[i][0]:  #买单小于卖单的量
                                 self.list_of_sell[i][0]+=self.list_of_buy[0][0] #卖单更新
                                 self.list_of_buy[0][0]=0 #清买单
                                 self.now_price = self.list_of_sell[i][1]  # 更新成交价格
-                                print('买单成交，成交价格{}'.format(self.now_price))
+                                print('agent{}直接买单成交，成交价格{}'.format(self.list_of_buy[0][2],self.now_price))
                             else:
                                 self.list_of_buy[0][0] += self.list_of_sell[i][0]  # 更新买单量
                                 self.list_of_sell[i][0]=0 #清卖单
                                 self.now_price = self.list_of_sell[i][1]
-                                print('买单部分成交，成交价为{}'.format(self.now_price))
+                                print('agent{}卖单全部分成交，成交价为{}'.format(self.list_of_sell[i][2], self.now_price))
+                                print('agent{}买单部分成交，成交价为{}'.format(self.list_of_buy[0][2],self.now_price))
 
                         i+=1
 
