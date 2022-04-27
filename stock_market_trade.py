@@ -10,7 +10,7 @@ if __name__=='__main__':
     100个agent,每个agent 20万现金，100万股
     """
     agent_count = 100
-    ep = 1
+    ep = 20
     env = StockTradingEnv(1e9,10,0.1,0.01,0.01,6,4)
     agent_list = []
 
