@@ -12,6 +12,14 @@ stock environment for reinforcement learning
 状态：
 1.流通股本：tradable_shares 【标量】<br> 
 2.实时价格：now_price 【标量】<br> 
-3.前一日价格:pre_close 【标量】<br> 
-4.日订单列表买:list_of_buy  【向量】<br> 
-5.日订单列表卖:list_of_sell  【维向量】<br> 
+3.日订单列表买:list_of_buy  【向量】<br> 
+4.日订单列表卖:list_of_sell  【维向量】<br> 
+
+--------------------------------------------------------
+
+初始价格10元，通过agent模拟市场交易
+
+![100agent-10ep—balance](https://user-images.githubusercontent.com/63079631/165524424-a74315cd-46cd-4e1c-9f18-99a9ce825ef8.png)
+![100agent-10ep—buy](https://user-images.githubusercontent.com/63079631/165524504-f97746ef-a109-4b5a-994c-56352276f4f7.png)
+![100agent-10ep—sell](https://user-images.githubusercontent.com/63079631/165524539-a73232fd-b428-4913-bb7b-9f2255ca727c.png)
+
